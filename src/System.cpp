@@ -21,7 +21,12 @@ void System::initialize() {
 void System::run() {
     running = true;
     while (running) {
-        showMainMenu();
+        // Nếu chưa đăng nhập, hiển thị menu chính
+        if (currentUsername.empty()) {
+            showMainMenu();
+        } else {
+            showUserMenu();
+        }
     }
 }
 
@@ -40,7 +45,7 @@ void System::showMainMenu() {
 
         switch (choice) {
             case 1:
-                // TODO : login
+                loginProcess();
                 break;
             case 2:
                 registerProcess();
@@ -53,7 +58,7 @@ void System::showMainMenu() {
                 std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
                 break;
         }
-    } while (choice != 0 && running);
+    } while (choice != 0 && currentUsername.empty() && running);
 }
 
 void System::registerProcess() {
@@ -91,6 +96,34 @@ void System::registerProcess() {
         std::cout << "Đăng ký thành công! Vui lòng đăng nhập để tiếp tục." << std::endl;
     }
 }
+
+void System::loginProcess() {
+    currentUsername = "dummy"; // Placeholder for the logged-in user
+}
+
+void System::showUserMenu() {
+    int choice = 0;
+    do {
+        
+        std::cout << "\n========== MENU NGƯỜI DÙNG ==========\n" << std::endl;
+        std::cout << "0. Thoát" << std::endl;
+        std::cout << "\nLựa chọn của bạn: ";
+        
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        switch (choice) {
+            case 0:
+                running = false;
+                std::cout << "Đang thoát khỏi hệ thống..." << std::endl;
+                break;
+            default:
+                std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
+                break;
+        }
+    } while (choice != 0 && running);
+}
+
 
 void System::shutdown() {
     // Todo: gracefully shutdown the system

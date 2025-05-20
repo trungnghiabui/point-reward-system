@@ -11,10 +11,13 @@ class System {
 private:
     std::unique_ptr<UserManager> userManager;
 
+    std::string currentUsername; // Người dùng hiện tại đang đăng nhập
+
     bool running; // Trạng thái chạy của hệ thống
     
     // Menu chức năng
     void showMainMenu();
+    void showUserMenu();
 
     // Xử lý đăng nhập, đăng ký
     void loginProcess();
