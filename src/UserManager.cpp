@@ -102,6 +102,12 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
         return false;
     }
 
+    // Kiểm tra xem tên người dùng đã tồn tại chưa
+    if (userExists(username)) {
+        std::cout << "Tên người dùng đã tồn tại!" << std::endl;
+        return false;
+    }
+
     // Kiểm tra mật khẩu
     if (!validatePassword(password)) {
         std::cout << "Mật khẩu không đủ mạnh! Yêu cầu ít nhất 8 ký tự và 3 loại ký tự khác nhau." << std::endl;
@@ -132,4 +138,8 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     
     std::cout << "Đăng ký thành công!" << std::endl;
     return true;
+}
+
+bool UserManager::userExists(const std::string& username) const {
+    return users.find(username) != users.end();
 }

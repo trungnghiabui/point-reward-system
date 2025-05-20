@@ -31,6 +31,8 @@ public:
     bool registerUser(const std::string& username, const std::string& password,
                      const std::string& fullName, const std::string& email,
                      const std::string& phoneNumber, const std::string& address);
+
+    bool userExists(const std::string& username) const;
     
 };
 
