@@ -34,7 +34,4 @@ Các bản đặc tả chức năng nằm ở thư mục `detail-design`
 2. Download
    - Download from this repository 
 3. Installation
-    - `g++ -std=c++17 -Wall -Wextra -I./include -c src/*.cpp`
-    - `mv *.o obj/`
-    - `g++ obj/*.o -o reward_wallet`
-    - `./reward_wallet.exe`
+   - Run `run.sh` file.
