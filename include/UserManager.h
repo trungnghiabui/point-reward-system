@@ -16,7 +16,7 @@ private:
 public:
     UserManager(const std::string& dataFilePath);
     ~UserManager();
-    
+
     // Quản lý dữ liệu
     void loadData();
     void saveData() const;

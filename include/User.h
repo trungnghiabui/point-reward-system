@@ -30,6 +30,10 @@ public:
     // Constructors
     User();
     User(const std::string& username, const std::string& passwordHash);
+
+    User(const std::string& username, const std::string& passwordHash, 
+        const std::string& fullName, const std::string& email, 
+        const std::string& phoneNumber, const std::string& address);
     
     // Getters & Setters
     std::string getUsername() const;
@@ -45,8 +49,6 @@ public:
     bool getIsAdmin() const;
     void setIsAdmin(bool isAdmin);
     time_t getCreatedAt() const;
-    time_t getLastLogin() const;
-    void updateLastLogin();
     time_t getLastLogin() const;
     void updateLastLogin();
     bool isPasswordTemporary() const;
