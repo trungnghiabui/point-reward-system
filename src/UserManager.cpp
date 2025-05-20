@@ -73,6 +73,12 @@ bool UserManager::validateUsername(const std::string& username) const {
     return std::regex_match(username, pattern);
 }
 
+bool UserManager::validateEmail(const std::string& email) const {
+    // Kiểm tra định dạng email cơ bản
+    std::regex pattern("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    return std::regex_match(email, pattern);
+}
+
 // Tạo tài khoản và xác thực
 bool UserManager::registerUser(const std::string& username, const std::string& password,
                               const std::string& fullName, const std::string& email,
@@ -81,6 +87,12 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     // Kiểm tra tên người dùng
     if (!validateUsername(username)) {
         std::cout << "Tên người dùng không hợp lệ! Yêu cầu 4-20 ký tự, chỉ gồm chữ cái, số và gạch dưới." << std::endl;
+        return false;
+    }
+
+    // Kiểm tra email
+    if (!validateEmail(email)) {
+        std::cout << "Địa chỉ email không hợp lệ!" << std::endl;
         return false;
     }
     
