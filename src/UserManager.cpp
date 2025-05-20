@@ -61,12 +61,29 @@ void UserManager::saveData() const {
     file.close();
 }
 
+// User validation
+bool UserManager::validateUsername(const std::string& username) const {
+    // Kiểm tra độ dài
+    if (username.length() < 4 || username.length() > 20) {
+        return false;
+    }
+    
+    // Chỉ cho phép chữ cái, số và dấu gạch dưới
+    std::regex pattern("^[a-zA-Z0-9_]+$");
+    return std::regex_match(username, pattern);
+}
+
 // Tạo tài khoản và xác thực
 bool UserManager::registerUser(const std::string& username, const std::string& password,
                               const std::string& fullName, const std::string& email,
                               const std::string& phoneNumber, const std::string& address) {
     
-    // TODO : Kiểm tra tính hợp lệ của input
+    // Kiểm tra tên người dùng
+    if (!validateUsername(username)) {
+        std::cout << "Tên người dùng không hợp lệ! Yêu cầu 4-20 ký tự, chỉ gồm chữ cái, số và gạch dưới." << std::endl;
+        return false;
+    }
+    
     // TODO : Hashpassword
     // Tạo người dùng mới
     User newUser(username, password, fullName, email, phoneNumber, address);

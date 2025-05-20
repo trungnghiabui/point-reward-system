@@ -12,6 +12,12 @@ class UserManager {
 private:
     std::unordered_map<std::string, User> users;  // Map username -> User
     std::string dataFilePath;                     // Đường dẫn file lưu dữ liệu
+
+    // Helper methods
+    bool validateUsername(const std::string& username) const;
+    bool validatePassword(const std::string& password) const;
+    bool validateEmail(const std::string& email) const;
+    bool validatePhoneNumber(const std::string& phoneNumber) const;
     
 public:
     UserManager(const std::string& dataFilePath);
