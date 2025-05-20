@@ -4,13 +4,21 @@
 #include <string>
 #include <memory>
 
+class UserManager;
+
 
 class System {
 private:
+    std::unique_ptr<UserManager> userManager;
+
     bool running; // Trạng thái chạy của hệ thống
     
     // Menu chức năng
     void showMainMenu();
+
+    // Xử lý đăng nhập, đăng ký
+    void loginProcess();
+    void registerProcess();
     
 public:
     System();
@@ -21,5 +29,7 @@ public:
     void run();
     void shutdown();
 };
+
+
 
 #endif // SYSTEM_H
