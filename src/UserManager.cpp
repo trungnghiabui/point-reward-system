@@ -1,4 +1,5 @@
 #include "../include/UserManager.h"
+#include "../include/PasswordManager.h"
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -73,6 +74,11 @@ bool UserManager::validateUsername(const std::string& username) const {
     return std::regex_match(username, pattern);
 }
 
+
+bool UserManager::validatePassword(const std::string& password) const {
+    return PasswordManager::isStrongPassword(password);
+}
+
 bool UserManager::validateEmail(const std::string& email) const {
     // Kiểm tra định dạng email cơ bản
     std::regex pattern("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
@@ -93,6 +99,12 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     // Kiểm tra tên người dùng
     if (!validateUsername(username)) {
         std::cout << "Tên người dùng không hợp lệ! Yêu cầu 4-20 ký tự, chỉ gồm chữ cái, số và gạch dưới." << std::endl;
+        return false;
+    }
+
+    // Kiểm tra mật khẩu
+    if (!validatePassword(password)) {
+        std::cout << "Mật khẩu không đủ mạnh! Yêu cầu ít nhất 8 ký tự và 3 loại ký tự khác nhau." << std::endl;
         return false;
     }
 
