@@ -79,6 +79,12 @@ bool UserManager::validateEmail(const std::string& email) const {
     return std::regex_match(email, pattern);
 }
 
+bool UserManager::validatePhoneNumber(const std::string& phoneNumber) const {
+    // Kiểm tra định dạng số điện thoại cơ bản (8-15 chữ số)
+    std::regex pattern("^[0-9]{8,15}$");
+    return std::regex_match(phoneNumber, pattern);
+}
+
 // Tạo tài khoản và xác thực
 bool UserManager::registerUser(const std::string& username, const std::string& password,
                               const std::string& fullName, const std::string& email,
@@ -93,6 +99,12 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     // Kiểm tra email
     if (!validateEmail(email)) {
         std::cout << "Địa chỉ email không hợp lệ!" << std::endl;
+        return false;
+    }
+
+    // Kiểm tra số điện thoại
+    if (!validatePhoneNumber(phoneNumber)) {
+        std::cout << "Số điện thoại không hợp lệ!" << std::endl;
         return false;
     }
     
