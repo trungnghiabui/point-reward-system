@@ -42,3 +42,4 @@ volumes/
 *.o
 *.dat
 *.exe
+reward_wallet
