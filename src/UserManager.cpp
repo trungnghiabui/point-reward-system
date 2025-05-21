@@ -185,3 +185,14 @@ bool UserManager::authenticateUser(const std::string& username, const std::strin
     
     return true;
 }
+
+// Danh sách người dùng
+std::vector<User> UserManager::getAllUsers() const {
+    std::vector<User> userList;
+    
+    for (const auto& [username, user] : users) {
+        userList.push_back(user);
+    }
+    
+    return userList;
+}

@@ -37,7 +37,11 @@ public:
     User* getUser(const std::string& username);
     const User* getUser(const std::string& username) const;
 
+    // Authentication
     bool authenticateUser(const std::string& username, const std::string& password);
+
+    // Danh sách người dùng
+    std::vector<User> getAllUsers() const;
     
 };
 
