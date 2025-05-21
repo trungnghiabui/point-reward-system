@@ -157,6 +157,70 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     return true;
 }
 
+bool UserManager::createUserByAdmin(const std::string& adminUsername,
+                                   const std::string& newUsername,
+                                   const std::string& fullName,
+                                   const std::string& email,
+                                   const std::string& phoneNumber,
+                                   const std::string& address) {
+    // Kiểm tra người dùng admin
+    if (!userExists(adminUsername)) {
+        std::cout << "Người quản lý không tồn tại!" << std::endl;
+        return false;
+    }
+    
+    User* admin = getUser(adminUsername);
+    if (!admin->getIsAdmin()) {
+        std::cout << "Người dùng " << adminUsername << " không có quyền quản lý!" << std::endl;
+        return false;
+    }
+    
+    // Kiểm tra tên người dùng mới
+    if (!validateUsername(newUsername)) {
+        std::cout << "Tên người dùng không hợp lệ! Yêu cầu 4-20 ký tự, chỉ gồm chữ cái, số và gạch dưới." << std::endl;
+        return false;
+    }
+    
+    // Kiểm tra xem tên người dùng đã tồn tại chưa
+    if (userExists(newUsername)) {
+        std::cout << "Tên người dùng đã tồn tại!" << std::endl;
+        return false;
+    }
+    
+    // Kiểm tra email
+    if (!validateEmail(email)) {
+        std::cout << "Địa chỉ email không hợp lệ!" << std::endl;
+        return false;
+    }
+    
+    // Kiểm tra số điện thoại
+    if (!validatePhoneNumber(phoneNumber)) {
+        std::cout << "Số điện thoại không hợp lệ!" << std::endl;
+        return false;
+    }
+    
+    // Tạo mật khẩu tạm thời
+    std::string tempPassword = PasswordManager::generateRandomPassword(10);
+    std::string passwordHash = PasswordManager::hashPassword(tempPassword);
+    
+    // Tạo người dùng mới
+    User newUser(newUsername, passwordHash, fullName, email, phoneNumber, address);
+    newUser.setPasswordTemporary(true);
+    
+    // Lưu vào danh sách
+    users[newUsername] = newUser;
+    
+    // Lưu dữ liệu
+    saveData();
+    
+    std::cout << "Tạo người dùng thành công!" << std::endl;
+    std::cout << "Tên đăng nhập: " << newUsername << std::endl;
+    std::cout << "Mật khẩu tạm thời: " << tempPassword << std::endl;
+    std::cout << "Người dùng sẽ được yêu cầu thay đổi mật khẩu khi đăng nhập lần đầu." << std::endl;
+    
+    return true;
+}
+
 bool UserManager::authenticateUser(const std::string& username, const std::string& password) {
     // Kiểm tra người dùng tồn tại
     if (!userExists(username)) {
@@ -195,4 +259,34 @@ std::vector<User> UserManager::getAllUsers() const {
     }
     
     return userList;
+}
+
+std::vector<User> UserManager::searchUsers(const std::string& searchTerm) const {
+    std::vector<User> results;
+    
+    // Tìm kiếm không phân biệt chữ hoa/thường
+    std::string lowerSearchTerm = searchTerm;
+    std::transform(lowerSearchTerm.begin(), lowerSearchTerm.end(), lowerSearchTerm.begin(), ::tolower);
+    
+    for (const auto& [username, user] : users) {
+        // Chuyển các trường cần tìm kiếm thành chữ thường
+        std::string lowerUsername = username;
+        std::transform(lowerUsername.begin(), lowerUsername.end(), lowerUsername.begin(), ::tolower);
+        
+        std::string lowerFullName = user.getFullName();
+        std::transform(lowerFullName.begin(), lowerFullName.end(), lowerFullName.begin(), ::tolower);
+        
+        std::string lowerEmail = user.getEmail();
+        std::transform(lowerEmail.begin(), lowerEmail.end(), lowerEmail.begin(), ::tolower);
+        
+        // Tìm kiếm trong các trường
+        if (lowerUsername.find(lowerSearchTerm) != std::string::npos ||
+            lowerFullName.find(lowerSearchTerm) != std::string::npos ||
+            lowerEmail.find(lowerSearchTerm) != std::string::npos ||
+            user.getPhoneNumber().find(searchTerm) != std::string::npos) {
+            results.push_back(user);
+        }
+    }
+    
+    return results;
 }

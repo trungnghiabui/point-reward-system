@@ -32,6 +32,14 @@ public:
                      const std::string& fullName, const std::string& email,
                      const std::string& phoneNumber, const std::string& address);
 
+    // Tạo tài khoản bởi admin với mật khẩu tự động
+    bool createUserByAdmin(const std::string& adminUsername,
+                          const std::string& newUsername,
+                          const std::string& fullName,
+                          const std::string& email,
+                          const std::string& phoneNumber,
+                          const std::string& address);
+
     // Quản lý người dùng
     bool userExists(const std::string& username) const;
     User* getUser(const std::string& username);
@@ -40,8 +48,17 @@ public:
     // Authentication
     bool authenticateUser(const std::string& username, const std::string& password);
 
+    // Admin điều chỉnh thông tin của người dùng khác
+    bool requestUserInfoUpdateByAdmin(const std::string& adminUsername,
+                                    const std::string& targetUsername,
+                                    const std::string& newFullName,
+                                    const std::string& newEmail,
+                                    const std::string& newPhoneNumber,
+                                    const std::string& newAddress);
+
     // Danh sách người dùng
     std::vector<User> getAllUsers() const;
+    std::vector<User> searchUsers(const std::string& searchTerm) const;
     
 };
 
