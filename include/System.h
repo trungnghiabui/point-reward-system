@@ -40,6 +40,9 @@ private:
     void walletManagementMenu();
     void transferPoints();
     void viewTransactionHistory();
+    
+    // Xử lý chức năng admin
+    void addPointsToUserWallet();
 
 public:
     System();
