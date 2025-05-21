@@ -5,6 +5,8 @@
 #include <vector>
 #include <ctime>
 
+// Forward declaration
+class Transaction;
 
 class User {
 private:
@@ -20,6 +22,9 @@ private:
     
     // Thông tin về vai trò
     bool isAdmin;                // True nếu là admin, false nếu là người dùng thông thường
+    
+    // Thông tin về ví điểm
+    std::string walletId;        // ID của ví người dùng
     
     // Thông tin khác
     time_t createdAt;            // Thời gian tạo tài khoản
@@ -53,6 +58,11 @@ public:
     void updateLastLogin();
     bool isPasswordTemporary() const;
     void setPasswordTemporary(bool isTemporary);
+    
+    // Liên quan đến ví
+    std::string getWalletId() const;
+    void setWalletId(const std::string& walletId);
+    bool hasWallet() const;
 
     // Serialization
     std::string serialize() const;

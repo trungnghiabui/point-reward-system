@@ -5,11 +5,15 @@
 #include <memory>
 
 class UserManager;
+class WalletManager;
+class TransactionManager;
 class AuthenticationManager;
 
 class System {
 private:
     std::unique_ptr<UserManager> userManager;
+    std::unique_ptr<WalletManager> walletManager;
+    std::unique_ptr<TransactionManager> transactionManager;
     std::unique_ptr<AuthenticationManager> authManager;
 
     std::string currentUsername; // Người dùng hiện tại đang đăng nhập
@@ -32,6 +36,11 @@ private:
     void searchUserProcess();
     void updateUserProfileByAdmin();
     
+    // Xử lý chức năng người dùng
+    void walletManagementMenu();
+    void transferPoints();
+    void viewTransactionHistory();
+
 public:
     System();
     ~System();
