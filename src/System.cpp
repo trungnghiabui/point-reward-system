@@ -49,7 +49,7 @@ void System::checkAndCreateDefaultData() {
         std::cout << "Tạo tài khoản admin mặc định..." << std::endl;
         
         std::string adminUsername = "admin";
-        std::string adminPassword = "admin";
+        std::string adminPassword = "Admin@123";
         std::string adminFullName = "Administrator";
         std::string adminEmail = "admin@example.com";
         std::string adminPhone = "0123456789";
