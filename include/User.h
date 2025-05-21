@@ -29,16 +29,28 @@ private:
     // Thông tin khác
     time_t createdAt;            // Thời gian tạo tài khoản
     time_t lastLogin;            // Thời gian đăng nhập gần nhất
-    bool passwordIsTemporary;    // True nếu mật khẩu là tạm thời, false nếu mật khẩu đã được thay đổi
+    bool passwordIsTemporary;    // Đánh dấu mật khẩu tạm thời cần thay đổi
+    
+    // Thông tin thay đổi tạm thời (chờ xác nhận OTP)
+    struct PendingChanges {
+        std::string fullName;
+        std::string email;
+        std::string phoneNumber;
+        std::string address;
+        bool hasChanges;
+        
+        PendingChanges() : hasChanges(false) {}
+    };
+    
+    PendingChanges pendingChanges;
 
 public:
     // Constructors
     User();
     User(const std::string& username, const std::string& passwordHash);
-
     User(const std::string& username, const std::string& passwordHash, 
-        const std::string& fullName, const std::string& email, 
-        const std::string& phoneNumber, const std::string& address);
+         const std::string& fullName, const std::string& email, 
+         const std::string& phoneNumber, const std::string& address);
     
     // Getters & Setters
     std::string getUsername() const;
@@ -63,8 +75,21 @@ public:
     std::string getWalletId() const;
     void setWalletId(const std::string& walletId);
     bool hasWallet() const;
-
-    // Serialization
+    
+    // Thay đổi mật khẩu
+    bool changePassword(const std::string& oldPassword, const std::string& newPassword);
+    
+    // Quản lý thay đổi thông tin
+    void savePendingChanges(const std::string& newFullName, const std::string& newEmail,
+                            const std::string& newPhoneNumber, const std::string& newAddress);
+    
+    void confirmPendingChanges();
+    void cancelPendingChanges();
+    bool hasPendingChanges() const;
+    PendingChanges getPendingChanges() const;
+    std::string getPendingChangesDescription() const;
+    
+    // Lưu trữ và phục hồi
     std::string serialize() const;
     static User deserialize(const std::string& data);
 };

@@ -26,6 +26,9 @@ public:
     std::string serialize() const;
     static Wallet deserialize(const std::string& data);
     
+    // Không cho phép thay đổi trực tiếp số dư từ bên ngoài
+    // Chỉ được thay đổi thông qua TransactionManager
+    
     // Chỉ cho TransactionManager truy cập, thay đổi số dư
     friend class TransactionManager;
 };

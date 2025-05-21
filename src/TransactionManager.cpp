@@ -1,12 +1,15 @@
 #include "../include/TransactionManager.h"
 #include "../include/WalletManager.h"
+#include "../include/OTPManager.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 
 TransactionManager::TransactionManager(WalletManager& walletManager, 
+                                     OTPManager& otpManager,
                                      const std::string& dataFilePath) 
     : walletManager(walletManager), 
+      otpManager(otpManager),
       dataFilePath(dataFilePath) {
     loadData();
 }
@@ -63,7 +66,7 @@ void TransactionManager::saveData() const {
     file.close();
 }
 
-// Khởi tạo giao dịch
+// Khởi tạo giao dịch (tạo và gửi OTP)
 bool TransactionManager::initiateTransaction(const std::string& sourceUsername, 
                                            const std::string& destinationWalletId,
                                            int amount,
@@ -92,10 +95,65 @@ bool TransactionManager::initiateTransaction(const std::string& sourceUsername,
     // Tạo giao dịch mới
     Transaction transaction(sourceWallet->getWalletId(), destinationWalletId, amount, description);
     
-    return executeTransaction(transaction);
+    // Lưu giao dịch vào danh sách chờ
+    pendingTransactions[sourceUsername] = transaction;
+    
+    // Tạo và gửi OTP
+    std::string otp = otpManager.generateTransactionOTP(sourceUsername, transaction);
+    otpManager.sendTransactionOTP(sourceUsername, otp, transaction);
+    
+    return true;
 }
 
-// Thực hiện giao dịch
+// Xác nhận giao dịch bằng OTP
+bool TransactionManager::confirmTransaction(const std::string& username, const std::string& otp) {
+    // Kiểm tra xem có giao dịch đang chờ không
+    if (!hasPendingTransaction(username)) {
+        std::cout << "Không có giao dịch nào đang chờ xác nhận!" << std::endl;
+        return false;
+    }
+    
+    // Xác thực OTP
+    if (!otpManager.verifyTransactionOTP(username, otp)) {
+        std::cout << "Xác thực OTP thất bại!" << std::endl;
+        return false;
+    }
+    
+    // Lấy giao dịch đang chờ
+    Transaction& transaction = pendingTransactions[username];
+    
+    // Thực hiện giao dịch
+    bool success = executeTransaction(transaction);
+    
+    // Xóa giao dịch khỏi danh sách chờ
+    pendingTransactions.erase(username);
+    
+    return success;
+}
+
+// Hủy giao dịch đang chờ
+bool TransactionManager::cancelPendingTransaction(const std::string& username) {
+    // Kiểm tra xem có giao dịch đang chờ không
+    if (!hasPendingTransaction(username)) {
+        std::cout << "Không có giao dịch nào đang chờ để hủy!" << std::endl;
+        return false;
+    }
+    
+    // Cập nhật trạng thái giao dịch
+    Transaction& transaction = pendingTransactions[username];
+    transaction.setStatus(Transaction::Status::CANCELED);
+    
+    // Lưu vào lịch sử
+    transactions.push_back(transaction);
+    
+    // Xóa khỏi danh sách chờ
+    pendingTransactions.erase(username);
+    
+    std::cout << "Đã hủy giao dịch!" << std::endl;
+    return true;
+}
+
+// Thực hiện giao dịch sau khi đã xác thực OTP
 bool TransactionManager::executeTransaction(Transaction& transaction) {
     // Lấy ví nguồn và đích
     Wallet* sourceWallet = walletManager.getWallet(transaction.getSourceWalletId());
@@ -229,6 +287,19 @@ std::vector<Transaction> TransactionManager::getUserTransactions(const std::stri
     }
     
     return userTransactions;
+}
+
+// Lấy giao dịch đang chờ của người dùng
+Transaction* TransactionManager::getPendingTransaction(const std::string& username) {
+    if (hasPendingTransaction(username)) {
+        return &pendingTransactions[username];
+    }
+    return nullptr;
+}
+
+// Kiểm tra người dùng có giao dịch đang chờ xử lý không
+bool TransactionManager::hasPendingTransaction(const std::string& username) const {
+    return pendingTransactions.find(username) != pendingTransactions.end();
 }
 
 // Báo cáo giao dịch

@@ -1,9 +1,10 @@
 #include "../include/AuthenticationManager.h"
 #include "../include/UserManager.h"
+#include "../include/OTPManager.h"
 #include <iostream>
 
-AuthenticationManager::AuthenticationManager(UserManager& userManager)
-    : userManager(userManager) {
+AuthenticationManager::AuthenticationManager(UserManager& userManager, OTPManager& otpManager)
+    : userManager(userManager), otpManager(otpManager) {
 }
 
 // Đăng nhập cơ bản
@@ -25,13 +26,64 @@ bool AuthenticationManager::login(const std::string& username, const std::string
     bool authenticated = userManager.authenticateUser(username, password);
     
     if (authenticated) {
+        // Đăng nhập thành công
         loggedInUsers[username] = true;
+        resetLoginAttempts(username);
+        
+        // Kiểm tra xem người dùng có sử dụng mật khẩu tạm thời không
+        if (userManager.checkAndPromptPasswordChange(username)) {
+            std::cout << "Bạn đang sử dụng mật khẩu tạm thời. Vui lòng thay đổi mật khẩu ngay." << std::endl;
+        }
     } else {
         // Đăng nhập thất bại
         handleFailedLogin(username);
     }
     
     return authenticated;
+}
+
+// Đăng nhập với OTP (cho hoạt động nhạy cảm)
+bool AuthenticationManager::loginWithOTP(const std::string& username, const std::string& password, const std::string& otp) {
+    // Kiểm tra đăng nhập cơ bản trước
+    if (!userManager.authenticateUser(username, password)) {
+        return false;
+    }
+    
+    // Xác thực OTP
+    if (!otpManager.verifyOTP(username, otp)) {
+        std::cout << "Mã OTP không đúng hoặc đã hết hạn!" << std::endl;
+        return false;
+    }
+    
+    // Đăng nhập thành công
+    loggedInUsers[username] = true;
+    resetLoginAttempts(username);
+    
+    std::cout << "Đăng nhập với xác thực 2 lớp thành công!" << std::endl;
+    return true;
+}
+
+// Khởi tạo quá trình xác thực 2 lớp
+bool AuthenticationManager::initiateOTPAuthentication(const std::string& username) {
+    if (!userManager.userExists(username)) {
+        std::cout << "Người dùng không tồn tại!" << std::endl;
+        return false;
+    }
+    
+    // Tạo và gửi OTP
+    std::string otp = otpManager.generateOTP(username);
+    otpManager.sendOTP(username, otp);
+    
+    std::cout << "Đã gửi mã OTP đến người dùng " << username << std::endl;
+    return true;
+}
+
+// Đăng xuất
+void AuthenticationManager::logout(const std::string& username) {
+    if (loggedInUsers.find(username) != loggedInUsers.end()) {
+        loggedInUsers.erase(username);
+        std::cout << "Đã đăng xuất khỏi tài khoản " << username << std::endl;
+    }
 }
 
 // Kiểm tra trạng thái đăng nhập
@@ -55,5 +107,12 @@ void AuthenticationManager::handleFailedLogin(const std::string& username) {
         std::cout << "Vui lòng liên hệ quản trị viên để mở khóa." << std::endl;
     } else {
         std::cout << "Đăng nhập thất bại! Còn " << remainingAttempts << " lần thử." << std::endl;
+    }
+}
+
+// Đặt lại số lần đăng nhập sai
+void AuthenticationManager::resetLoginAttempts(const std::string& username) {
+    if (loginAttempts.find(username) != loginAttempts.end()) {
+        loginAttempts.erase(username);
     }
 }

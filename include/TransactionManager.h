@@ -7,18 +7,24 @@
 #include "Transaction.h"
 
 class WalletManager;
+class OTPManager;
 
 class TransactionManager {
 private:
     WalletManager& walletManager;
-    
+    OTPManager& otpManager;
     std::vector<Transaction> transactions;
     std::string dataFilePath;
     
+    // Giao dịch đang chờ xác thực OTP
+    std::unordered_map<std::string, Transaction> pendingTransactions; // username -> Transaction
+    
+    // Thực hiện giao dịch sau khi đã xác thực OTP
     bool executeTransaction(Transaction& transaction);
     
 public:
     TransactionManager(WalletManager& walletManager, 
+                      OTPManager& otpManager,
                       const std::string& dataFilePath = "transactions.dat");
     ~TransactionManager();
     
@@ -26,12 +32,14 @@ public:
     void loadData();
     void saveData() const;
     
-    // Khởi tạo giao dịch 
+    // Khởi tạo giao dịch (tạo và gửi OTP)
     bool initiateTransaction(const std::string& sourceUsername, 
                            const std::string& destinationWalletId,
                            int amount,
                            const std::string& description = "");
     
+    // Xác nhận giao dịch bằng OTP
+    bool confirmTransaction(const std::string& username, const std::string& otp);
     
     // Hủy giao dịch đang chờ
     bool cancelPendingTransaction(const std::string& username);

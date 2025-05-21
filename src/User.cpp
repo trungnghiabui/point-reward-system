@@ -1,4 +1,5 @@
 #include "../include/User.h"
+#include "../include/PasswordManager.h"
 #include <sstream>
 #include <iostream>
 
@@ -115,7 +116,74 @@ bool User::hasWallet() const {
     return !walletId.empty();
 }
 
-// Serualization
+// Thay đổi mật khẩu
+bool User::changePassword(const std::string& oldPassword, const std::string& newPassword) {
+    // Kiểm tra mật khẩu cũ
+    if (!PasswordManager::verifyPassword(oldPassword, passwordHash)) {
+        std::cout << "Mật khẩu cũ không đúng!" << std::endl;
+        return false;
+    }
+    
+    // Kiểm tra mật khẩu mới có đủ mạnh không
+    if (!PasswordManager::isStrongPassword(newPassword)) {
+        std::cout << "Mật khẩu mới không đủ mạnh!" << std::endl;
+        return false;
+    }
+    
+    // Cập nhật mật khẩu
+    passwordHash = PasswordManager::hashPassword(newPassword);
+    passwordIsTemporary = false;
+    
+    std::cout << "Mật khẩu đã được thay đổi thành công!" << std::endl;
+    return true;
+}
+
+// Quản lý thay đổi thông tin
+void User::savePendingChanges(const std::string& newFullName, const std::string& newEmail,
+                            const std::string& newPhoneNumber, const std::string& newAddress) {
+    pendingChanges.fullName = newFullName;
+    pendingChanges.email = newEmail;
+    pendingChanges.phoneNumber = newPhoneNumber;
+    pendingChanges.address = newAddress;
+    pendingChanges.hasChanges = true;
+}
+
+void User::confirmPendingChanges() {
+    if (pendingChanges.hasChanges) {
+        fullName = pendingChanges.fullName;
+        email = pendingChanges.email;
+        phoneNumber = pendingChanges.phoneNumber;
+        address = pendingChanges.address;
+        
+        // Xóa thông tin thay đổi tạm thời
+        pendingChanges.hasChanges = false;
+    }
+}
+
+void User::cancelPendingChanges() {
+    pendingChanges.hasChanges = false;
+}
+
+bool User::hasPendingChanges() const {
+    return pendingChanges.hasChanges;
+}
+
+User::PendingChanges User::getPendingChanges() const {
+    return pendingChanges;
+}
+
+std::string User::getPendingChangesDescription() const {
+    std::stringstream ss;
+    ss << "Các thay đổi sẽ được áp dụng:\n";
+    ss << "- Họ tên: " << (fullName != pendingChanges.fullName ? pendingChanges.fullName + " (thay đổi từ " + fullName + ")" : "Không thay đổi") << "\n";
+    ss << "- Email: " << (email != pendingChanges.email ? pendingChanges.email + " (thay đổi từ " + email + ")" : "Không thay đổi") << "\n";
+    ss << "- Số điện thoại: " << (phoneNumber != pendingChanges.phoneNumber ? pendingChanges.phoneNumber + " (thay đổi từ " + phoneNumber + ")" : "Không thay đổi") << "\n";
+    ss << "- Địa chỉ: " << (address != pendingChanges.address ? pendingChanges.address + " (thay đổi từ " + address + ")" : "Không thay đổi");
+    
+    return ss.str();
+}
+
+// Lưu trữ và phục hồi
 std::string User::serialize() const {
     std::stringstream ss;
     ss << username << "\n";
@@ -125,6 +193,7 @@ std::string User::serialize() const {
     ss << phoneNumber << "\n";
     ss << address << "\n";
     ss << (isAdmin ? "1" : "0") << "\n";
+    ss << walletId << "\n";
     ss << createdAt << "\n";
     ss << lastLogin << "\n";
     ss << (passwordIsTemporary ? "1" : "0") << "\n";
@@ -146,7 +215,9 @@ User User::deserialize(const std::string& data) {
     std::string temp;
     std::getline(iss, temp);
     user.isAdmin = (temp == "1");
-        
+    
+    std::getline(iss, user.walletId);
+    
     std::getline(iss, temp);
     user.createdAt = std::stol(temp);
     
