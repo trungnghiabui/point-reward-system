@@ -16,6 +16,9 @@ public:
     
     // Xác thực mật khẩu
     static bool verifyPassword(const std::string& inputPassword, const std::string& storedHash);
+
+    // Nhập mật khẩu
+    static std::string getPasswordInput();
 };
 
 #endif // PASSWORD_MANAGER_H

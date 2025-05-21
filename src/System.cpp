@@ -269,7 +269,7 @@ void System::loginProcess() {
     std::getline(std::cin, username);
     
     std::cout << "Mật khẩu: ";
-    std::getline(std::cin, password);
+    password = PasswordManager::getPasswordInput();
     
     if (authManager->login(username, password)) {
         currentUsername = username;
@@ -286,7 +286,7 @@ void System::registerProcess() {
     std::getline(std::cin, username);
     
     std::cout << "Mật khẩu: ";
-    std::getline(std::cin, password);
+    password = PasswordManager::getPasswordInput();
     
     std::cout << "Xác nhận mật khẩu: ";
     std::getline(std::cin, confirmPassword);
@@ -335,14 +335,14 @@ void System::changePasswordProcess() {
     std::cout << "\n========== THAY ĐỔI MẬT KHẨU ==========\n" << std::endl;
     
     std::cout << "Mật khẩu hiện tại: ";
-    std::getline(std::cin, oldPassword);
+    oldPassword = PasswordManager::getPasswordInput();
     
     std::cout << "Mật khẩu mới: ";
-    std::getline(std::cin, newPassword);
-    
+    newPassword = PasswordManager::getPasswordInput();
+
     std::cout << "Xác nhận mật khẩu mới: ";
-    std::getline(std::cin, confirmPassword);
-    
+    confirmPassword = PasswordManager::getPasswordInput();
+
     if (newPassword != confirmPassword) {
         std::cout << "Mật khẩu mới không khớp!" << std::endl;
         return;

@@ -6,6 +6,9 @@
 #include <functional>
 #include <random>
 #include <ctime>
+#include <termios.h>
+#include <unistd.h>
+#include <iostream> 
 
 // Kiểm tra độ mạnh của mật khẩu
 bool PasswordManager::isStrongPassword(const std::string& password) {
@@ -43,6 +46,28 @@ std::string sha256(const std::string& input) {
     for (int i = 0; i < SHA256_BLOCK_SIZE; ++i)
         ss << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
     return ss.str();
+}
+
+std::string PasswordManager::getPasswordInput() {
+    std::string password;
+    struct termios oldt, newt;
+
+    // Get current terminal settings
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+
+    // Disable echoing
+    newt.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    // Read password
+    std::getline(std::cin, password);
+
+    // Restore terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    std::cout << std::endl; // Move to the next line after input
+
+    return password;
 }
 
 std::string PasswordManager::hashPassword(const std::string& password) {
