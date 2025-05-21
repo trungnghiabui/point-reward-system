@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <string>
 #include <functional>
+#include <random>
+#include <ctime>
 
 // Kiểm tra độ mạnh của mật khẩu
 bool PasswordManager::isStrongPassword(const std::string& password) {
@@ -53,4 +55,20 @@ std::string PasswordManager::hashPassword(const std::string& password) {
 bool PasswordManager::verifyPassword(const std::string& inputPassword, const std::string& storedHash) {
     std::string inputHash = hashPassword(inputPassword);
     return inputHash == storedHash;
+}
+
+// Tạo mật khẩu ngẫu nhiên với độ dài chỉ định
+std::string PasswordManager::generateRandomPassword(int length) {
+    const std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<int> distribution(0, charset.size() - 1);
+    
+    std::string password;
+    for (int i = 0; i < length; ++i) {
+        password += charset[distribution(generator)];
+    }
+    
+    return password;
 }
