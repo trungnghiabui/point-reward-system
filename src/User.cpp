@@ -103,6 +103,18 @@ void User::setPasswordTemporary(bool isTemporary) {
     passwordIsTemporary = isTemporary;
 }
 
+std::string User::getWalletId() const {
+    return walletId;
+}
+
+void User::setWalletId(const std::string& walletId) {
+    this->walletId = walletId;
+}
+
+bool User::hasWallet() const {
+    return !walletId.empty();
+}
+
 // Serualization
 std::string User::serialize() const {
     std::stringstream ss;

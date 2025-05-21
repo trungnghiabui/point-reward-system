@@ -1,5 +1,7 @@
 #include "../include/System.h"
 #include "../include/UserManager.h"
+#include "../include/WalletManager.h"
+#include "../include/TransactionManager.h"
 #include "AuthenticationManager.h"
 #include <iostream>
 #include <limits>
@@ -15,6 +17,8 @@ System::~System() {
 void System::initialize() {
     std::cout << "\n===== KHỞI TẠO HỆ THỐNG =====\n" << std::endl;
     userManager = std::make_unique<UserManager>("users.dat");
+    walletManager = std::make_unique<WalletManager>("wallets.dat");
+    transactionManager = std::make_unique<TransactionManager>(*walletManager, "transactions.dat");
     authManager = std::make_unique<AuthenticationManager>(*userManager);
 
     // Kiểm tra và tạo dữ liệu mặc định
@@ -159,9 +163,33 @@ void System::loginProcess() {
 
 void System::showUserMenu() {
     int choice = 0;
+    
+    // Kiểm tra xem người dùng có ví chưa
+    User* user = userManager->getUser(currentUsername);
+    if (user && !user->hasWallet()) {
+        std::cout << "\nBạn chưa có ví. Hệ thống sẽ tạo ví cho bạn." << std::endl;
+        walletManager->createWallet(currentUsername);
+        
+        // Cập nhật ID ví cho người dùng
+        Wallet* wallet = walletManager->getUserWallet(currentUsername);
+        if (wallet) {
+            user->setWalletId(wallet->getWalletId());
+            userManager->saveData();
+            std::cout << "Đã tạo ví với ID: " << wallet->getWalletId() << std::endl;
+        }
+    }
+    
     do {
+        int balance = transactionManager->getUserBalance(currentUsername);
         
         std::cout << "\n========== MENU NGƯỜI DÙNG ==========\n" << std::endl;
+        std::cout << "Xin chào, " << user->getFullName() << "!" << std::endl;
+        std::cout << "Số dư ví: " << balance << " điểm" << std::endl;
+        std::cout << "\n1. Thông tin tài khoản" << std::endl;
+        std::cout << "2. Quản lý ví" << std::endl;
+        std::cout << "3. Thay đổi mật khẩu" << std::endl;
+        std::cout << "4. Cập nhật thông tin cá nhân" << std::endl;
+        std::cout << "9. Đăng xuất" << std::endl;
         std::cout << "0. Thoát" << std::endl;
         std::cout << "\nLựa chọn của bạn: ";
         
@@ -169,6 +197,17 @@ void System::showUserMenu() {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         
         switch (choice) {
+            case 1:
+                break;
+            case 2:
+                walletManagementMenu();
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 9:
+                break;
             case 0:
                 running = false;
                 std::cout << "Đang thoát khỏi hệ thống..." << std::endl;
@@ -177,9 +216,136 @@ void System::showUserMenu() {
                 std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
                 break;
         }
-    } while (choice != 0 && running);
+    } while (choice != 0 && choice != 9 && running);
 }
 
+void System::walletManagementMenu() {
+    int choice = 0;
+    
+    do {
+        User* user = userManager->getUser(currentUsername);
+        if (!user) return;
+        
+        Wallet* wallet = walletManager->getUserWallet(currentUsername);
+        if (!wallet) {
+            std::cout << "Lỗi: Không tìm thấy ví của bạn!" << std::endl;
+            return;
+        }
+        
+        std::cout << "\n========== QUẢN LÝ VÍ ==========\n" << std::endl;
+        std::cout << "ID ví: " << wallet->getWalletId() << std::endl;
+        std::cout << "Số dư: " << wallet->getBalance() << " điểm" << std::endl;
+        
+        std::cout << "\n1. Chuyển điểm" << std::endl;
+        std::cout << "2. Xem lịch sử giao dịch" << std::endl;
+        
+        std::cout << "0. Quay lại" << std::endl;
+        std::cout << "\nLựa chọn của bạn: ";
+        
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        switch (choice) {
+            case 1:
+                transferPoints();
+                break;
+            case 2:
+                viewTransactionHistory();
+                break;
+           
+            case 0:
+                break;
+            default:
+                std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
+                break;
+        }
+    } while (choice != 0);
+}
+
+void System::transferPoints() {
+    std::string destinationWalletId;
+    int amount;
+    std::string description;
+    
+    std::cout << "\n========== CHUYỂN ĐIỂM ==========\n" << std::endl;
+    
+    std::cout << "Nhập ID ví đích: ";
+    std::getline(std::cin, destinationWalletId);
+    
+    // Kiểm tra ví đích
+    if (!walletManager->walletExists(destinationWalletId)) {
+        std::cout << "Ví đích không tồn tại!" << std::endl;
+        return;
+    }
+    
+    // Kiểm tra không tự chuyển cho chính mình
+    Wallet* sourceWallet = walletManager->getUserWallet(currentUsername);
+    if (sourceWallet && sourceWallet->getWalletId() == destinationWalletId) {
+        std::cout << "Không thể chuyển điểm cho chính mình!" << std::endl;
+        return;
+    }
+    
+    std::cout << "Nhập số điểm muốn chuyển: ";
+    std::cin >> amount;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    if (amount <= 0) {
+        std::cout << "Số điểm không hợp lệ!" << std::endl;
+        return;
+    }
+    
+    std::cout << "Mô tả giao dịch (tùy chọn): ";
+    std::getline(std::cin, description);
+    
+    // Khởi tạo giao dịch
+    transactionManager->initiateTransaction(currentUsername, destinationWalletId, amount, description);
+}
+
+void System::viewTransactionHistory() {
+    auto transactions = transactionManager->getUserTransactionHistory(currentUsername);
+    
+    std::cout << "\n========== LỊCH SỬ GIAO DỊCH ==========\n" << std::endl;
+    
+    if (transactions.empty()) {
+        std::cout << "Chưa có giao dịch nào." << std::endl;
+        std::cout << "\nNhấn Enter để tiếp tục...";
+        std::cin.get();
+        return;
+    }
+    
+    Wallet* userWallet = walletManager->getUserWallet(currentUsername);
+    std::string userWalletId = userWallet ? userWallet->getWalletId() : "";
+    
+    std::cout << std::left << std::setw(15) << "Mã giao dịch"
+              << std::setw(15) << "Loại"
+              << std::setw(10) << "Số điểm"
+              << std::setw(15) << "Trạng thái"
+              << "Mô tả" << std::endl;
+    
+    std::cout << std::string(70, '-') << std::endl;
+    
+    for (const auto& transaction : transactions) {
+        std::string type;
+        std::string amount;
+        
+        if (transaction.getSourceWalletId() == userWalletId) {
+            type = "Chuyển đi";
+            amount = "- " + std::to_string(transaction.getAmount());
+        } else {
+            type = "Nhận về";
+            amount = "+ " + std::to_string(transaction.getAmount());
+        }
+        
+        std::cout << std::left << std::setw(15) << transaction.getTransactionId()
+                  << std::setw(15) << type
+                  << std::setw(10) << amount
+                  << std::setw(15) << Transaction::statusToString(transaction.getStatus())
+                  << transaction.getDescription() << std::endl;
+    }
+    
+    std::cout << "\nNhấn Enter để tiếp tục...";
+    std::cin.get();
+}
 
 void System::shutdown() {
     // Todo: gracefully shutdown the system
