@@ -239,6 +239,8 @@ void System::userManagementMenu() {
     }
 
     do {
+        int balance = transactionManager->getUserBalance(currentUsername);
+
         std::cout << "\n========== QUẢN LÝ NGƯỜI DÙNG ==========\n" << std::endl;
         std::cout << "Xin chào, " << user->getFullName() << "!" << std::endl;
         std::cout << "Số dư ví: " << balance << " điểm" << std::endl;
