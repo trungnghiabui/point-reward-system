@@ -62,6 +62,24 @@ void UserManager::saveData() const {
     file.close();
 }
 
+bool UserManager::userExists(const std::string& username) const {
+    return users.find(username) != users.end();
+}
+
+User* UserManager::getUser(const std::string& username) {
+    if (userExists(username)) {
+        return &users[username];
+    }
+    return nullptr;
+}
+
+const User* UserManager::getUser(const std::string& username) const {
+    if (userExists(username)) {
+        return &users.at(username);
+    }
+    return nullptr;
+}
+
 // User validation
 bool UserManager::validateUsername(const std::string& username) const {
     // Kiểm tra độ dài
@@ -126,9 +144,8 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
         return false;
     }
     
-    // TODO : Hashpassword
     // Tạo người dùng mới
-    User newUser(username, password, fullName, email, phoneNumber, address);
+    User newUser(username, PasswordManager::hashPassword(password), fullName, email, phoneNumber, address);
     
     // Lưu vào danh sách
     users[username] = newUser;
@@ -140,6 +157,31 @@ bool UserManager::registerUser(const std::string& username, const std::string& p
     return true;
 }
 
-bool UserManager::userExists(const std::string& username) const {
-    return users.find(username) != users.end();
+bool UserManager::authenticateUser(const std::string& username, const std::string& password) {
+    // Kiểm tra người dùng tồn tại
+    if (!userExists(username)) {
+        std::cout << "Tên người dùng không tồn tại!" << std::endl;
+        return false;
+    }
+    
+    User* user = getUser(username);
+    
+    // Kiểm tra mật khẩu
+    if (!PasswordManager::verifyPassword(password, user->getPasswordHash())) {
+        std::cout << "Mật khẩu không đúng!" << std::endl;
+        return false;
+    }
+    
+    // Cập nhật thời gian đăng nhập cuối
+    user->updateLastLogin();
+    saveData();
+    
+    std::cout << "Đăng nhập thành công!" << std::endl;
+    
+    // Kiểm tra mật khẩu tạm thời
+    if (user->isPasswordTemporary()) {
+        std::cout << "Bạn đang sử dụng mật khẩu tạm thời. Vui lòng thay đổi mật khẩu ngay." << std::endl;
+    }
+    
+    return true;
 }

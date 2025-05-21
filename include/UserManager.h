@@ -32,7 +32,12 @@ public:
                      const std::string& fullName, const std::string& email,
                      const std::string& phoneNumber, const std::string& address);
 
+    // Quản lý người dùng
     bool userExists(const std::string& username) const;
+    User* getUser(const std::string& username);
+    const User* getUser(const std::string& username) const;
+
+    bool authenticateUser(const std::string& username, const std::string& password);
     
 };
 
