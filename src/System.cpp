@@ -73,7 +73,14 @@ void System::run() {
         if (currentUsername.empty()) {
             showMainMenu();
         } else {
-            showUserMenu();
+            // Kiểm tra xem người dùng có phải admin không
+            User* user = userManager->getUser(currentUsername);
+            
+            if (user && user->getIsAdmin()) {
+                showAdminMenu();
+            } else {
+                showUserMenu();
+            }
         }
     }
 }
@@ -107,6 +114,73 @@ void System::showMainMenu() {
                 break;
         }
     } while (choice != 0 && currentUsername.empty() && running);
+}
+
+void System::showUserMenu() {
+    int choice = 0;
+    do {
+        
+        std::cout << "\n========== MENU NGƯỜI DÙNG ==========\n" << std::endl;
+        std::cout << "0. Thoát" << std::endl;
+        std::cout << "\nLựa chọn của bạn: ";
+        
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        switch (choice) {
+            case 0:
+                running = false;
+                std::cout << "Đang thoát khỏi hệ thống..." << std::endl;
+                break;
+            default:
+                std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
+                break;
+        }
+    } while (choice != 0 && running);
+}
+
+void System::showAdminMenu() {
+    int choice = 0;
+    
+    do {
+        std::cout << "\n========== MENU QUẢN TRỊ VIÊN ==========\n" << std::endl;
+        std::cout << "1. Quản lý người dùng" << std::endl;
+        std::cout << "2. Đăng xuất" << std::endl;
+        std::cout << "0. Thoát" << std::endl;
+        std::cout << "\nLựa chọn của bạn: ";
+        
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        switch (choice) {
+            case 1:
+                userManagementMenu();
+                break;
+            case 0:
+                running = false;
+                std::cout << "Đang thoát khỏi hệ thống..." << std::endl;
+                break;
+            default:
+                std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
+                break;
+        }
+    } while (choice != 0 && choice != 9 && running);
+}
+
+void System::loginProcess() {
+    std::string username, password;
+    
+    std::cout << "\n========== ĐĂNG NHẬP ==========\n" << std::endl;
+    std::cout << "Tên đăng nhập: ";
+    std::getline(std::cin, username);
+    
+    std::cout << "Mật khẩu: ";
+    std::getline(std::cin, password);
+    
+    if (authManager->login(username, password)) {
+        currentUsername = username;
+        std::cout << "Đăng nhập thành công!" << std::endl;
+    }
 }
 
 void System::registerProcess() {
@@ -145,23 +219,8 @@ void System::registerProcess() {
     }
 }
 
-void System::loginProcess() {
-    std::string username, password;
-    
-    std::cout << "\n========== ĐĂNG NHẬP ==========\n" << std::endl;
-    std::cout << "Tên đăng nhập: ";
-    std::getline(std::cin, username);
-    
-    std::cout << "Mật khẩu: ";
-    std::getline(std::cin, password);
-    
-    if (authManager->login(username, password)) {
-        currentUsername = username;
-        std::cout << "Đăng nhập thành công!" << std::endl;
-    }
-}
-
-void System::showUserMenu() {
+// Xử lý chức năng admin
+void System::userManagementMenu() {
     int choice = 0;
     
     // Kiểm tra xem người dùng có ví chưa
@@ -178,67 +237,16 @@ void System::showUserMenu() {
             std::cout << "Đã tạo ví với ID: " << wallet->getWalletId() << std::endl;
         }
     }
-    
+
     do {
-        int balance = transactionManager->getUserBalance(currentUsername);
-        
-        std::cout << "\n========== MENU NGƯỜI DÙNG ==========\n" << std::endl;
+        std::cout << "\n========== QUẢN LÝ NGƯỜI DÙNG ==========\n" << std::endl;
         std::cout << "Xin chào, " << user->getFullName() << "!" << std::endl;
         std::cout << "Số dư ví: " << balance << " điểm" << std::endl;
-        std::cout << "\n1. Thông tin tài khoản" << std::endl;
-        std::cout << "2. Quản lý ví" << std::endl;
-        std::cout << "3. Thay đổi mật khẩu" << std::endl;
-        std::cout << "4. Cập nhật thông tin cá nhân" << std::endl;
-        std::cout << "9. Đăng xuất" << std::endl;
-        std::cout << "0. Thoát" << std::endl;
-        std::cout << "\nLựa chọn của bạn: ";
-        
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        
-        switch (choice) {
-            case 1:
-                break;
-            case 2:
-                walletManagementMenu();
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 9:
-                break;
-            case 0:
-                running = false;
-                std::cout << "Đang thoát khỏi hệ thống..." << std::endl;
-                break;
-            default:
-                std::cout << "Lựa chọn không hợp lệ. Vui lòng thử lại." << std::endl;
-                break;
-        }
-    } while (choice != 0 && choice != 9 && running);
-}
-
-void System::walletManagementMenu() {
-    int choice = 0;
-    
-    do {
-        User* user = userManager->getUser(currentUsername);
-        if (!user) return;
-        
-        Wallet* wallet = walletManager->getUserWallet(currentUsername);
-        if (!wallet) {
-            std::cout << "Lỗi: Không tìm thấy ví của bạn!" << std::endl;
-            return;
-        }
-        
-        std::cout << "\n========== QUẢN LÝ VÍ ==========\n" << std::endl;
-        std::cout << "ID ví: " << wallet->getWalletId() << std::endl;
-        std::cout << "Số dư: " << wallet->getBalance() << " điểm" << std::endl;
-        
-        std::cout << "\n1. Chuyển điểm" << std::endl;
-        std::cout << "2. Xem lịch sử giao dịch" << std::endl;
-        
+        std::cout << "1. Tạo tài khoản mới" << std::endl;
+        std::cout << "2. Xem danh sách người dùng" << std::endl;
+        std::cout << "3. Tìm kiếm người dùng" << std::endl;
+        std::cout << "4. Cập nhật thông tin người dùng" << std::endl;
+        std::cout << "5. Quản lý ví" << std::endl;
         std::cout << "0. Quay lại" << std::endl;
         std::cout << "\nLựa chọn của bạn: ";
         
@@ -247,12 +255,17 @@ void System::walletManagementMenu() {
         
         switch (choice) {
             case 1:
-                transferPoints();
+                createUserProcess();
                 break;
             case 2:
-                viewTransactionHistory();
+                listAllUsers();
                 break;
-           
+            case 3:
+                searchUserProcess();
+                break;
+            case 5:
+                searchUserProcess();
+                break;
             case 0:
                 break;
             default:
@@ -260,6 +273,100 @@ void System::walletManagementMenu() {
                 break;
         }
     } while (choice != 0);
+}
+
+void System::createUserProcess() {
+    std::string username, fullName, email, phoneNumber, address;
+    
+    std::cout << "\n========== TẠO TÀI KHOẢN MỚI ==========\n" << std::endl;
+    
+    std::cout << "Tên đăng nhập: ";
+    std::getline(std::cin, username);
+    
+    std::cout << "Họ và tên: ";
+    std::getline(std::cin, fullName);
+    
+    std::cout << "Email: ";
+    std::getline(std::cin, email);
+    
+    std::cout << "Số điện thoại: ";
+    std::getline(std::cin, phoneNumber);
+    
+    std::cout << "Địa chỉ: ";
+    std::getline(std::cin, address);
+    
+    if (userManager->createUserByAdmin(currentUsername, username, fullName, email, phoneNumber, address)) {
+        std::cout << "Đã tạo tài khoản thành công!" << std::endl;
+    }
+}
+
+void System::listAllUsers() {
+    auto users = userManager->getAllUsers();
+    
+    std::cout << "\n========== DANH SÁCH NGƯỜI DÙNG ==========\n" << std::endl;
+    
+    if (users.empty()) {
+        std::cout << "Không có người dùng nào." << std::endl;
+        std::cout << "\nNhấn Enter để tiếp tục...";
+        std::cin.get();
+        return;
+    }
+    
+    std::cout << std::left << std::setw(15) << "Tên đăng nhập"
+              << std::setw(20) << "Họ tên"
+              << std::setw(25) << "Email"
+              << std::setw(15) << "Điện thoại"
+              << std::setw(10) << "Admin" << std::endl;
+    
+    std::cout << std::string(85, '-') << std::endl;
+    
+    for (const auto& user : users) {
+        std::cout << std::left << std::setw(15) << user.getUsername()
+                  << std::setw(20) << user.getFullName()
+                  << std::setw(25) << user.getEmail()
+                  << std::setw(15) << user.getPhoneNumber()
+                  << std::setw(10) << (user.getIsAdmin() ? "Có" : "Không") << std::endl;
+    }
+    
+    std::cout << "\nNhấn Enter để tiếp tục...";
+    std::cin.get();
+}
+
+void System::searchUserProcess() {
+    std::string searchTerm;
+    
+    std::cout << "\n========== TÌM KIẾM NGƯỜI DÙNG ==========\n" << std::endl;
+    
+    std::cout << "Nhập từ khóa tìm kiếm: ";
+    std::getline(std::cin, searchTerm);
+    
+    auto users = userManager->searchUsers(searchTerm);
+    
+    std::cout << "\nKết quả tìm kiếm (" << users.size() << " người dùng):\n" << std::endl;
+    
+    if (users.empty()) {
+        std::cout << "Không tìm thấy người dùng nào." << std::endl;
+        std::cout << "\nNhấn Enter để tiếp tục...";
+        std::cin.get();
+        return;
+    }
+    
+    std::cout << std::left << std::setw(15) << "Tên đăng nhập"
+              << std::setw(20) << "Họ tên"
+              << std::setw(25) << "Email"
+              << std::setw(15) << "Điện thoại" << std::endl;
+    
+    std::cout << std::string(75, '-') << std::endl;
+    
+    for (const auto& user : users) {
+        std::cout << std::left << std::setw(15) << user.getUsername()
+                  << std::setw(20) << user.getFullName()
+                  << std::setw(25) << user.getEmail()
+                  << std::setw(15) << user.getPhoneNumber() << std::endl;
+    }
+    
+    std::cout << "\nNhấn Enter để tiếp tục...";
+    std::cin.get();
 }
 
 void System::transferPoints() {

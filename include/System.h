@@ -23,10 +23,18 @@ private:
     // Menu chức năng
     void showMainMenu();
     void showUserMenu();
+    void showAdminMenu();
 
     // Xử lý đăng nhập, đăng ký
     void loginProcess();
     void registerProcess();
+
+    // Xử lý chức năng admin
+    void userManagementMenu();
+    void createUserProcess();
+    void listAllUsers();
+    void searchUserProcess();
+    void updateUserProfileByAdmin();
     
     // Xử lý chức năng người dùng
     void walletManagementMenu();
