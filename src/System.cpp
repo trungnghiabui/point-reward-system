@@ -16,7 +16,49 @@ void System::initialize() {
     std::cout << "\n===== KHỞI TẠO HỆ THỐNG =====\n" << std::endl;
     userManager = std::make_unique<UserManager>("users.dat");
     authManager = std::make_unique<AuthenticationManager>(*userManager);
+
+    // Kiểm tra và tạo dữ liệu mặc định
+    checkAndCreateDefaultData();
     std::cout << "Hệ thống đã sẵn sàng." << std::endl;
+}
+
+void System::checkAndCreateDefaultData() {
+    // Kiểm tra xem đã có admin chưa
+    bool hasAdmin = false;
+    auto users = userManager->getAllUsers();
+    
+    for (const auto& user : users) {
+        if (user.getIsAdmin()) {
+            hasAdmin = true;
+            break;
+        }
+    }
+    
+    // Nếu chưa có admin, tạo tài khoản admin mặc định
+    if (!hasAdmin && users.empty()) {
+        std::cout << "Tạo tài khoản admin mặc định..." << std::endl;
+        
+        std::string adminUsername = "admin";
+        std::string adminPassword = "Admin@123";
+        std::string adminFullName = "Administrator";
+        std::string adminEmail = "admin@example.com";
+        std::string adminPhone = "0123456789";
+        std::string adminAddress = "System";
+        
+        userManager->registerUser(adminUsername, adminPassword, adminFullName, 
+                                adminEmail, adminPhone, adminAddress);
+        
+        // Đặt quyền admin
+        User* admin = userManager->getUser(adminUsername);
+        if (admin) {
+            admin->setIsAdmin(true);
+            userManager->saveData();
+        }
+        
+        std::cout << "Đã tạo tài khoản admin:" << std::endl;
+        std::cout << "- Tên đăng nhập: " << adminUsername << std::endl;
+        std::cout << "- Mật khẩu: " << adminPassword << std::endl;
+    }
 }
 
 

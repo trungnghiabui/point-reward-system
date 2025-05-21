@@ -32,6 +32,9 @@ public:
     void initialize();
     void run();
     void shutdown();
+
+    // Kiểm tra và tạo dữ liệu mặc định
+    void checkAndCreateDefaultData();
 };
 
 
