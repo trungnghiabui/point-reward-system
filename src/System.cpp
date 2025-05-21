@@ -1,5 +1,6 @@
 #include "../include/System.h"
 #include "../include/UserManager.h"
+#include "AuthenticationManager.h"
 #include <iostream>
 #include <limits>
 #include <iomanip>
@@ -14,6 +15,7 @@ System::~System() {
 void System::initialize() {
     std::cout << "\n===== KHỞI TẠO HỆ THỐNG =====\n" << std::endl;
     userManager = std::make_unique<UserManager>("users.dat");
+    authManager = std::make_unique<AuthenticationManager>(*userManager);
     std::cout << "Hệ thống đã sẵn sàng." << std::endl;
 }
 
@@ -98,7 +100,19 @@ void System::registerProcess() {
 }
 
 void System::loginProcess() {
-    currentUsername = "dummy"; // Placeholder for the logged-in user
+    std::string username, password;
+    
+    std::cout << "\n========== ĐĂNG NHẬP ==========\n" << std::endl;
+    std::cout << "Tên đăng nhập: ";
+    std::getline(std::cin, username);
+    
+    std::cout << "Mật khẩu: ";
+    std::getline(std::cin, password);
+    
+    if (authManager->login(username, password)) {
+        currentUsername = username;
+        std::cout << "Đăng nhập thành công!" << std::endl;
+    }
 }
 
 void System::showUserMenu() {

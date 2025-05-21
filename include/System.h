@@ -5,11 +5,12 @@
 #include <memory>
 
 class UserManager;
-
+class AuthenticationManager;
 
 class System {
 private:
     std::unique_ptr<UserManager> userManager;
+    std::unique_ptr<AuthenticationManager> authManager;
 
     std::string currentUsername; // Người dùng hiện tại đang đăng nhập
 
