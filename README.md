@@ -2,10 +2,10 @@
 Dự án quản lý ví điểm thưởng
 
 ## Members
-1. Bùi Trung Nghĩa - K24DTCN465 (dựng base, làm tài liệu)
-2. Lê Chí Dũng - K24DTCN433
-3. Lê Bảo Hưng - K24DTCN445
-4. Nguyễn Quang Huy - K24DTCN447
+1. Bùi Trung Nghĩa (dựng base, làm tài liệu)
+2. Lê Chí Dũng
+3. Lê Bảo Hưng
+4. Nguyễn Quang Huy
 
 ## Summary
 Hệ thống được xây dựng với kiến trúc hướng đối tượng, bao gồm các thành phần chính:
