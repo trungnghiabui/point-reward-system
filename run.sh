@@ -4,7 +4,7 @@ set -e
 
 mkdir -p obj
 
-g++ -std=c++17 -Wall -Wextra -I./include -c src/*.cpp
+g++ -std=c++17 -Wall -Wextra -I./include -c src/*.cpp  -w
 
 mv *.o obj/
 
