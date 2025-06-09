@@ -2,10 +2,11 @@
 Dự án quản lý ví điểm thưởng
 
 ## Members
-1. Bùi Trung Nghĩa - K24DTCN465 (Dựng base, làm tài liệu + Thiết kế, triển khai phần tạo, list user, admin, các chức năng người dùng)
-2. Lê Chí Dũng - K24DTCN433 (Thiết kế design, triển khai phần OTP, Authentication)
-3. Lê Bảo Hưng - K24DTCN445 (Thiết kế, triển khai phần ví, transaction, chuyển điểm giữa các ví)
-4. ~~Nguyễn Quang Huy~~
+
+1. Bùi Trung Nghĩa (dựng base, làm tài liệu)
+2. Lê Chí Dũng
+3. Lê Bảo Hưng
+4. Nguyễn Quang Huy
 
 ## Summary
 Hệ thống được xây dựng với kiến trúc hướng đối tượng, bao gồm các thành phần chính:
@@ -34,4 +35,4 @@ Các bản đặc tả chức năng nằm ở thư mục `detail-design`
 2. Download
    - Download from this repository 
 3. Installation
-    - Run `./run.sh`
+   - Run `run.sh` file.
